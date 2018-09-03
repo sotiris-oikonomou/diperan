@@ -16,6 +16,7 @@ namespace Diperan {
             Diperan::Benchmarks::crc32_run();
         }
         else if(benchmark.compare(Diperan::benchmark_sha2_command_pkt) == 0) {
+            std::cout<<"Warmup: "<<Diperan::g_state.benchmark_warmup<<" Buffer: "<<Diperan::g_state.benchmark_buffer_size<<std::endl;
             Diperan::Benchmarks::sha2_run();
         }
     }

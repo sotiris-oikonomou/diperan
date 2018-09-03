@@ -16,7 +16,9 @@
 #include "flatbuffers/flatbuffer_events_info_decode.h"
 #include "processing/outgoing/packet_creation.h"
 #include "packet_type_definitions.h"
+#include "master/helpers/command_pkt_creation.h"
 #include "master/ui/linenoise.hpp"
+#include "master/ui/rang.hpp"
 
 namespace Diperan {
     void master_run();

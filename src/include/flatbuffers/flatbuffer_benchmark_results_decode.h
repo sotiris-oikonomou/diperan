@@ -39,10 +39,10 @@ namespace Diperan {
         auto cycles = flatbuffer_obj->clock_cycles();
         auto microseconds = flatbuffer_obj->microseconds();
         auto benchmark_type = flatbuffer_obj->benchmark_type();
-        std::cout << "Node: " << uuid << std::endl;
+        std::cout << std::endl << "Node: " << uuid << std::endl;
         std::cout << " Benchmark: "
                   << benchmark_type->c_str()
-                  << "\tCycles: "
+                  << "\tCPU Cycles: "
                   << cycles
                   << "\t uSec: "
                   << microseconds

@@ -33,12 +33,18 @@ OBJ = $(ODIR)/init.o \
       $(ODIR)/crc32.o \
       $(ODIR)/sha2.o \
       $(ODIR)/run_benchmark.o \
+      $(ODIR)/command_pkt_creation.o \
       $(ODIR)/master.o \
 	  $(ODIR)/main.o
 
 .PHONY: all clean install uninstall
 
 $(ODIR)/%.o: $(SRCDIR)/master/%.cpp $(DEPS)
+	@mkdir -p $(ODIR)
+	@echo Compiling $< to $@
+	@$(CC) -c -o $@ $< $(CFLAGS) $(CINCLUDES)
+
+$(ODIR)/%.o: $(SRCDIR)/master/helpers/%.cpp $(DEPS)
 	@mkdir -p $(ODIR)
 	@echo Compiling $< to $@
 	@$(CC) -c -o $@ $< $(CFLAGS) $(CINCLUDES)

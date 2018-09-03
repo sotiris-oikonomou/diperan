@@ -93,7 +93,13 @@ namespace Diperan {
             temp.buffer.reserve(byte_buffer_size);
             temp.buffer.insert(temp.buffer.end(), byte_buffer, byte_buffer + byte_buffer_size);
 
+            Diperan::g_outgoing_mutex.lock();
             Diperan::g_state.out_pkts.push(temp);
+
+            if (Diperan::g_state.out_pkts.size() > Diperan::g_state.outgoing_queue_length) {
+                Diperan::g_state.out_pkts.pop();
+            }
+            Diperan::g_outgoing_mutex.unlock();
         }
     }
 }
