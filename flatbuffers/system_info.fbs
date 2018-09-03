@@ -1,0 +1,56 @@
+namespace Diperan.System.Info;
+
+enum CacheType : byte {
+    Data,
+    Instruction,
+    Unified,
+    TraceBuffer,
+    Vector
+}
+
+table CpuTlb {
+    type:CacheType = Data (id: 0);
+    level:int = 0 (id: 1);
+    page_size:int = 0 (id: 2); //KB
+    entries_num:int = 0 (id: 3);
+    associativity:int = 0 (id: 4);
+}
+
+table CpuCache {
+    type:CacheType = Data (id: 0);
+    level:int = 0 (id: 1);
+    size:int = 0 (id: 2); //KB
+    line_size:int = 0 (id: 3);
+    lines_num:int = 0 (id: 4);
+    associativity:int = 0 (id: 5);
+}
+
+table BasicSystemInfo {
+    papi_version:string (id: 0);
+    os_info:string (id: 1);
+    cpu_vendor:string (id: 2);
+    cpu_model:string (id: 3);
+    cpu_rev:float (id: 4);
+    CPUID:string (id: 5);
+    max_mhz:int = 0 (id: 6);
+    min_mhz:int = 0 (id: 7);
+    cores:int = 0 (id: 8);
+    SMT_thread_per_core:int = 1 (id: 9);
+    cores_per_socket:int = 1 (id: 10);
+    sockets:int = 1 (id: 11);
+    cores_per_numa_region:int = 1 (id:12);
+    numa_regions:int = 0 (id: 13);
+    in_vm:bool = false (id: 14);
+    vm_vendor:string (id: 15);
+    hardware_counters_num:int = 0 (id: 16);
+    max_multiplex_counters:int = 0 (id: 17);
+    fast_counter_read:bool = false (id: 18);
+}
+
+table TotalSystemInfo {
+    cpu_tlbs:[CpuTlb] (id: 0);
+    cpu_caches:[CpuCache] (id: 1);
+    basic_system_info:BasicSystemInfo (id: 2);
+}
+
+root_type TotalSystemInfo;

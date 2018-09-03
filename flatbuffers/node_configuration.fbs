@@ -1,0 +1,11 @@
+namespace Diperan.Configuration;
+
+table Options {
+    used_papi_event_codes:[int] (id: 0);
+    benchmark_warmup:uint = 0 (id: 1);
+    benchmark_buffer_size:uint = 0 (id: 2);
+    incoming_queue_length:uint = 0 (id: 3);
+    outgoing_queue_length:uint = 0 (id: 4);
+}
+
+root_type Options;

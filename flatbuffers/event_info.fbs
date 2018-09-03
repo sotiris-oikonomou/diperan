@@ -1,0 +1,7 @@
+namespace Diperan.Event.Info;
+
+table Events {
+    event_codes:[int] (id: 0);
+}
+
+root_type Events;

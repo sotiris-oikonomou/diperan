@@ -1,0 +1,15 @@
+namespace Diperan.Benchmark.Results;
+
+table EventResult {
+    event_code:int32 = 0 (id: 0);
+    event_value:int64 = 0 (id:1);
+}
+
+table BenchmarkResults {
+    events_results:[EventResult] (id: 0);
+    clock_cycles:int64 = 0 (id:1);
+    microseconds:int64 = 0 (id:2);
+    benchmark_type:string (id:3);
+}
+
+root_type BenchmarkResults;
