@@ -19,7 +19,7 @@ namespace Diperan {
             std::vector <uint8_t> buffer;
             std::vector <uint8_t> hash_buffer(picosha2::k_digest_size);
             std::vector <int32_t> event_codes;
-            std::vector <int64_t> counter_values;
+            std::vector <long long int> counter_values;
 
             Diperan::Benchmarks::sha2_init(buffer);
             Diperan::Benchmarks::existing_events(event_codes);

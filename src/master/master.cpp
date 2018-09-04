@@ -20,12 +20,17 @@ namespace Diperan {
                 PAPI_shutdown();
                 exit(EXIT_SUCCESS);
             } else if (line.compare("list peers") == 0) {
-                std::cout << "Recognised peer UUIDs" << std::endl;
-                for (auto &&node_temp : Diperan::g_state.other_nodes) {
-                    if (node_temp.second.name.size() != 0) {
-                        std::cout << "  UUID: " << node_temp.second.UUID << std::endl;
+                if(Diperan::g_state.other_nodes.size() > 0) {
+                    std::cout << "Recognised peer UUIDs" << std::endl;
+                    for (auto &&node_temp : Diperan::g_state.other_nodes) {
+                        if (node_temp.second.name.size() != 0) {
+                            std::cout << "  UUID: " << node_temp.second.UUID << std::endl;
+                        }
+                        Diperan::thread_wait_random_time(5, 1);
                     }
-                    Diperan::thread_wait_random_time(5, 1);
+                }
+                else {
+                    std::cout << "No Recognised peers" << std::endl;
                 }
             } else if (line.compare("peer info") == 0) {
                 linenoise::Readline("UUID# ", line);

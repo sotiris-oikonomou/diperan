@@ -18,7 +18,7 @@ namespace Diperan {
         void crc32_run() {
             std::vector <uint8_t> buffer;
             std::vector <int32_t> event_codes;
-            std::vector <int64_t> counter_values;
+            std::vector <long long int> counter_values;
 
             Diperan::Benchmarks::crc32_init(buffer);
             Diperan::Benchmarks::existing_events(event_codes);

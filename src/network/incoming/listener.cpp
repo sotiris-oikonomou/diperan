@@ -49,14 +49,11 @@ namespace Diperan {
                                                        reinterpret_cast<uint8_t *>(zframe_data(zframe_tmp)),
                                                        reinterpret_cast<uint8_t *>(zframe_data(zframe_tmp)) +
                                                        temp_buffer_size);
-                                Diperan::g_incoming_mutex.lock();
-                                Diperan::g_state.in_pkts.push(temp_pkt);
-                                Diperan::g_incoming_mutex.unlock();
                             }
-
                             zframe_destroy(&zframe_tmp);
 
                             Diperan::g_incoming_mutex.lock();
+                            Diperan::g_state.in_pkts.push(temp_pkt);
                             if (Diperan::g_state.in_pkts.size() > Diperan::g_state.incoming_queue_length) {
                                 Diperan::g_state.in_pkts.pop();
                             }
@@ -76,12 +73,18 @@ namespace Diperan {
                             temp_pkt.command = std::string(diperan_packet_type);
                             temp_pkt.UUID = std::string(zre_node_UUID);
                             temp_pkt.name = std::string(zre_node_name);
+                            zframe_t *zframe_tmp = zmsg_pop(msg);
+                            if (zframe_tmp) {
+                                int temp_buffer_size = zframe_size(zframe_tmp);
+                                temp_pkt.buffer.insert(temp_pkt.buffer.end(),
+                                                       reinterpret_cast<uint8_t *>(zframe_data(zframe_tmp)),
+                                                       reinterpret_cast<uint8_t *>(zframe_data(zframe_tmp)) +
+                                                       temp_buffer_size);
+                            }
+                            zframe_destroy(&zframe_tmp);
 
                             Diperan::g_incoming_mutex.lock();
                             Diperan::g_state.in_pkts.push(temp_pkt);
-                            Diperan::g_incoming_mutex.unlock();
-
-                            Diperan::g_incoming_mutex.lock();
                             if (Diperan::g_state.in_pkts.size() > Diperan::g_state.incoming_queue_length) {
                                 Diperan::g_state.in_pkts.pop();
                             }
@@ -101,5 +104,7 @@ namespace Diperan {
             }
         }
     }
+
+
 
 }

@@ -12,7 +12,6 @@
 #include "flatbuffers/system_info_generated.h"
 #include "hardware/system_info/caches/caches_info.h"
 #include "processing/outgoing/master/peer_discovery_helpers.h"
-#include "processing/outgoing/master/peer_pruning.h"
 #include "packet_type_definitions.h"
 
 namespace Diperan {

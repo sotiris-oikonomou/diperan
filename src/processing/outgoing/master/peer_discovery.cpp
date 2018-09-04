@@ -29,7 +29,7 @@ namespace Diperan {
 
                 temp_node_voidptr_UUID = zlist_next(peers);
             }
-            Diperan::peer_pruning();
+            //Diperan::peer_pruning();
             Diperan::thread_wait_random_time(Diperan::g_state.peer_update_loop_wait_time, 1);
         }
     }

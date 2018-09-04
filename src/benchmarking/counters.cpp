@@ -9,6 +9,12 @@ namespace Diperan {
         void prepare_counters(std::vector <int32_t> &event_codes) {
             int32_t retval;
 
+            retval = PAPI_multiplex_init();
+            if (retval != PAPI_OK) {
+                std::cerr << "PAPI_multiplex_init error: " << PAPI_strerror(retval) << std::endl;
+                return;
+            }
+
             retval = PAPI_start_counters(event_codes.data(), event_codes.size());
             if (retval != PAPI_OK) {
                 std::cerr << "PAPI_start_counters error: " << PAPI_strerror(retval) << std::endl;
@@ -16,7 +22,7 @@ namespace Diperan {
             }
         }
 
-        void read_counters(const std::vector <int32_t> &event_codes, std::vector <int64_t> &counter_values) {
+        void read_counters(const std::vector <int32_t> &event_codes, std::vector <long long int> &counter_values) {
             counter_values.empty();
             counter_values.resize(event_codes.size());
             int32_t retval;
@@ -46,7 +52,7 @@ namespace Diperan {
         }
 
         void create_benchmark_results_flatb(const std::vector <int32_t> &event_codes,
-                                            const std::vector <int64_t> &counter_values,
+                                            const std::vector <long long int> &counter_values,
                                             int64_t cycles,
                                             int64_t time,
                                             std::string benchmark_type) {

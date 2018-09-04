@@ -22,7 +22,6 @@ OBJ = $(ODIR)/init.o \
       $(ODIR)/in_processor_helpers_m.o \
       $(ODIR)/in_processor_helpers_n.o \
       $(ODIR)/peer_discovery.o \
-      $(ODIR)/peer_pruning.o \
       $(ODIR)/peer_discovery_helpers.o \
       $(ODIR)/packet_creation.o \
       $(ODIR)/system_info.o \

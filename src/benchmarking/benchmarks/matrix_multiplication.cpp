@@ -55,7 +55,7 @@ namespace Diperan {
                 std::vector<double> matrixb;
                 std::vector<double> mresult;
                 std::vector <int32_t> event_codes;
-                std::vector <int64_t> counter_values;
+                std::vector <long long int> counter_values;
 
                 Diperan::Benchmarks::matrix_multiplication_init(INDEX, matrixa, matrixb, mresult);
                 Diperan::Benchmarks::existing_events(event_codes);
@@ -81,7 +81,7 @@ namespace Diperan {
                 std::vector<float> matrixb;
                 std::vector<float> mresult;
                 std::vector <int32_t> event_codes;
-                std::vector <int64_t> counter_values;
+                std::vector <long long int> counter_values;
 
                 Diperan::Benchmarks::matrix_multiplication_init(INDEX, matrixa, matrixb, mresult);
                 Diperan::Benchmarks::existing_events(event_codes);

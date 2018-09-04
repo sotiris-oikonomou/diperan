@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <string>
+#include <papi.h>
 
 #include "mainVariables.h"
 #include "flatbuffers/flatbuffers.h"

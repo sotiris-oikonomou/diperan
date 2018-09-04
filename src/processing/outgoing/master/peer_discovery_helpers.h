@@ -14,6 +14,8 @@
 
 
 namespace Diperan {
-    void add_node_as_peer(std::string node_UUID);
+    void add_node_as_peer(std::string);
+    void peer_pruning();
+    bool is_peer_node_in_zlist(std::string);
 }
 #endif //PEER_DISCOVERY_HELPERS_H
