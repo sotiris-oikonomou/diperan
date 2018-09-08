@@ -22,12 +22,14 @@ namespace Diperan {
             } else if (line.compare("list peers") == 0) {
                 if(Diperan::g_state.other_nodes.size() > 0) {
                     std::cout << "Recognised peer UUIDs" << std::endl;
-                    for (auto &&node_temp : Diperan::g_state.other_nodes) {
+                    Diperan::g_peers_mutex.lock();
+                    for (auto node_temp : Diperan::g_state.other_nodes) {
                         if (node_temp.second.name.size() != 0) {
                             std::cout << "  UUID: " << node_temp.second.UUID << std::endl;
                         }
                         Diperan::thread_wait_random_time(5, 1);
                     }
+                    Diperan::g_peers_mutex.unlock();
                 }
                 else {
                     std::cout << "No Recognised peers" << std::endl;

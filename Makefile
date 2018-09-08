@@ -8,7 +8,7 @@ SYSTEMD_INSTALL_DIR = /lib/systemd/system
 
 EXECUTABLE_NAME = diperan
 
-CFLAGS = -O2 -fPIC -std=c++11 -Wall
+CFLAGS = -O0 -fPIC -std=c++11 -Wall -g3 -ggdb -rdynamic
 CINCLUDES = -I $(INCLDIR) \
 	        -I $(SRCDIR)
 LIBS= -lpthread -lpapi -lzyre -lczmq -lzmq

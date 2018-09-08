@@ -97,7 +97,9 @@ namespace Diperan {
                 zstr_free(&zre_msg_type);
                 zstr_free(&zre_node_name);
                 zstr_free(&zre_node_UUID);
-                zstr_free(&zre_group);
+                if(zre_group) {
+                    zstr_free(&zre_group);
+                }
                 zmsg_destroy(&msg);
 
                 Diperan::thread_wait_random_time(g_state.listening_loop_wait_time, 1);
