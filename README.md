@@ -1,27 +1,12 @@
 # diperan - A distributed system information and benchmarking statistics daemon
 
-## Contents
-
-
-**[Overview](#overview)**
-
-**[Scope and Goals](#scope-and-goals)**
-
-**[Ownership and License](#ownership-and-license)**
-
-**[Using diperan](#using-diperan)**
-
-**[Building on Linux](#building-on-linux)**
-
-
-## Overview
-
 ### Scope and Goals
-
-### Ownership and License
 
 ## Using diperan
 
 ### Building on Linux
 
-To start with, you need at least these packages:
+To build diperan, you need these packages:
+*  [Flatbuffers](https://github.com/google/flatbuffers) - You will have to download, compile and install it
+*  [libpapi-dev] on debian and derivatives
+*  [zyre](https://github.com/zeromq/zyre) - You will have to download, compile and install it
