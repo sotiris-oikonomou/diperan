@@ -90,6 +90,6 @@ tmp/
 
 # Flatbuffer source directory
 thirdparty/flatbuffers_src/*
-! thirdparty/flatbuffers_src/DIPERAN_README.md
+!thirdparty/flatbuffers_src/DIPERAN_README.md
 
 ########################################################################################################################################################
