@@ -1,7 +1,7 @@
 //
 // Created by sotiris on 30/7/2018.
 //
-#include "system_info.h"
+#include "hardware/system_info/system_info.h"
 
 namespace Diperan {
 

@@ -2,7 +2,7 @@
 // Created by sotiris on 20/7/2018.
 //
 
-#include "find_supported_events.h"
+#include "hardware/find_supported_events.h"
 
 namespace Diperan {
 

@@ -1,7 +1,7 @@
 //
 // Created by sotiris on 1/8/2018.
 //
-#include "sender.h"
+#include "network/outgoing/sender.h"
 
 namespace Diperan {
 

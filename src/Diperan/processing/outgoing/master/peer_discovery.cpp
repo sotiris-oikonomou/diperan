@@ -2,7 +2,7 @@
 // Created by sotiris on 8/8/2018.
 //
 
-#include "peer_discovery.h"
+#include "processing/outgoing/master/peer_discovery.h"
 
 namespace Diperan {
     void peer_discovery_loop() {

@@ -2,7 +2,7 @@
 // Created by sotiris on 13/8/2018.
 //
 
-#include "in_processor_helpers_m.h"
+#include "processing/incoming/master/in_processor_helpers_m.h"
 
 namespace Diperan {
     void save_peer_node(incoming_packet_t pkt) {

@@ -2,7 +2,7 @@
 // Created by sotiris on 27/8/2018.
 //
 
-#include "counters.h"
+#include "benchmarking/counters.h"
 
 namespace Diperan {
     namespace Benchmarks {
@@ -15,7 +15,7 @@ namespace Diperan {
                 return;
             }
 
-            retval = PAPI_start_counters(event_codes.data(), event_codes.size());
+            //retval = PAPI_start_counters(event_codes.data(), event_codes.size());
             if (retval != PAPI_OK) {
                 std::cerr << "PAPI_start_counters error: " << PAPI_strerror(retval) << std::endl;
                 return;
@@ -27,7 +27,7 @@ namespace Diperan {
             counter_values.resize(event_codes.size());
             int32_t retval;
 
-            retval = PAPI_stop_counters(&counter_values[0], event_codes.size());
+            //retval = PAPI_stop_counters(&counter_values[0], event_codes.size());
             if (retval != PAPI_OK) {
                 std::cerr << "PAPI_stop_counters error: " << PAPI_strerror(retval) << std::endl;
                 return;

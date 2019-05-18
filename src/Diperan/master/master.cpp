@@ -2,7 +2,7 @@
 // Created by sotiris on 18/8/2018.
 //
 
-#include "master.h"
+#include "master/master.h"
 
 namespace Diperan {
     void master_run() {

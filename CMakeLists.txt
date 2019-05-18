@@ -27,7 +27,8 @@ SET (PROJECT_VENDOR_CONTACT "sotoik@gmail.com")
 
 OPTION (BUILD_SHARED_LIBRARY "Build shared library." OFF)
 OPTION (BUILD_STATIC_LIBRARY "Build static library." OFF)
-OPTION (BUILD_UTILITY "Build utility." ON)
+OPTION (BUILD_UTILITY "Build utility." OFF)
+OPTION (BUILD_CLI "Build cli application." ON)
 OPTION (BUILD_UNIT_TESTS "Build tests" ON)
 OPTION (BUILD_CODE_COVERAGE "Build code coverage" ON)
 OPTION (BUILD_DOCUMENTATION "Build documentation" ON)
@@ -153,7 +154,7 @@ SET (CMAKE_CXX_EXTENSIONS OFF)
 
 ## Debugging Options
 
-SET (CMAKE_VERBOSE_MAKEFILE 0) # Use 1 for debugging, 0 for release
+SET (CMAKE_VERBOSE_MAKEFILE 1) # Use 1 for debugging, 0 for release
 
 ########################################################################################################################################################
 
@@ -228,14 +229,7 @@ ENDFOREACH ()
 
 ## Dependencies
 
-# FIND_PACKAGE (OpenMP)
-
-# IF (OPENMP_FOUND)
-#     SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-#     SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-# ELSE ()
-#     MESSAGE (SEND_ERROR "[OpenMP] not found.")
-# ENDIF ()
+FIND_PACKAGE (PAPI)
 
 ########################################################################################################################################################
 
@@ -248,20 +242,6 @@ IF (DEFINED PROJECT_VERSION_STRING AND EXISTS "${PROJECT_SOURCE_DIR}/src/${PROJE
 ENDIF ()
 
 ########################################################################################################################################################
-
-########################################################################################################################################################
-## Adding flatbuffers source code
-
-# Add FlatBuffers directly to our build. This defines the `flatbuffers` target.
-add_subdirectory(${FLATBUFFERS_SRC_DIR}
-                 ${CMAKE_CURRENT_BINARY_DIR}/thirdparty/flatbuffers_src
-                 EXCLUDE_FROM_ALL)
-# Now simply link against flatbuffers as needed to your already declared target.
-# The flatbuffers target carry header search path automatically if CMake > 2.8.11.
-target_link_libraries(own_project_target PRIVATE flatbuffers)
-
-########################################################################################################################################################
-
 
 ## Targets
 
@@ -321,6 +301,45 @@ IF (BUILD_UTILITY)
 
 ENDIF ()
 
+### Cli application 
+
+IF (BUILD_CLI)
+
+    ## Targets
+    if (WIN32)
+        SET (EXECUTABLE_NAME "${PROJECT_PACKAGE_NAME}.exe")
+    else ()
+        SET (EXECUTABLE_NAME "${PROJECT_PACKAGE_NAME}")
+    endif ()
+
+    SET (EXECUTABLE_TARGET ${EXECUTABLE_NAME})
+
+    FILE (GLOB_RECURSE EXE_HEADERS "${PROJECT_SOURCE_DIR}/include/*.hpp")
+    FILE (GLOB_RECURSE EXE_SRCS "${PROJECT_SOURCE_DIR}/src/*.cpp" "${PROJECT_SOURCE_DIR}/src/*.cxx")
+
+    ADD_EXECUTABLE (${EXECUTABLE_TARGET} ${EXE_SRCS})
+
+    TARGET_INCLUDE_DIRECTORIES (${EXECUTABLE_TARGET} PUBLIC "${CMAKE_SOURCE_DIR}/include")
+    TARGET_INCLUDE_DIRECTORIES (${EXECUTABLE_TARGET} PUBLIC "${PROJECT_SOURCE_DIR}/include")
+
+    TARGET_LINK_LIBRARIES (${EXECUTABLE_TARGET} "pthread")
+    TARGET_LINK_LIBRARIES (${EXECUTABLE_TARGET} "zyre")
+    TARGET_LINK_LIBRARIES (${EXECUTABLE_TARGET} "czmq")
+    TARGET_LINK_LIBRARIES (${EXECUTABLE_TARGET} "zmq")
+
+    IF (PAPI_FOUND)
+        TARGET_INCLUDE_DIRECTORIES (${EXECUTABLE_TARGET} PRIVATE ${PAPI_INCLUDE_DIRS})
+        TARGET_LINK_LIBRARIES (${EXECUTABLE_TARGET} ${PAPI_LIBRARIES})
+    ELSE ()
+        MESSAGE (SEND_ERROR "[PAPI] not found.")
+    ENDIF ()
+    
+    SET_TARGET_PROPERTIES (${EXECUTABLE_TARGET} PROPERTIES VERSION ${PROJECT_VERSION_STRING} OUTPUT_NAME ${EXECUTABLE_NAME} CLEAN_DIRECT_OUTPUT 1)
+
+    INSTALL (TARGETS ${EXECUTABLE_TARGET} DESTINATION ${INSTALL_BIN} COMPONENT "applications")
+
+ENDIF ()
+
 ### Unit Tests
 
 IF (BUILD_UNIT_TESTS)
@@ -346,15 +365,12 @@ IF (BUILD_UNIT_TESTS)
 
     ENABLE_TESTING ()
 
-    ADD_DEPENDENCIES (${UNIT_TESTS_TARGET} ${SHARED_LIBRARY_TARGET})
-
     TARGET_INCLUDE_DIRECTORIES (${UNIT_TESTS_TARGET} PUBLIC ${GTEST_INCLUDE_DIRS})
     TARGET_INCLUDE_DIRECTORIES (${UNIT_TESTS_TARGET} PUBLIC "${PROJECT_SOURCE_DIR}/include")
     TARGET_INCLUDE_DIRECTORIES (${UNIT_TESTS_TARGET} PUBLIC "${PROJECT_SOURCE_DIR}/test")
 
     TARGET_LINK_LIBRARIES (${UNIT_TESTS_TARGET} "pthread")
     TARGET_LINK_LIBRARIES (${UNIT_TESTS_TARGET} ${GTEST_BOTH_LIBRARIES})
-    TARGET_LINK_LIBRARIES (${UNIT_TESTS_TARGET} "${SHARED_LIBRARY_TARGET}")
 
     SET_TARGET_PROPERTIES (${UNIT_TESTS_TARGET} PROPERTIES VERSION ${PROJECT_VERSION_STRING} OUTPUT_NAME ${UNIT_TESTS_TARGET} CLEAN_DIRECT_OUTPUT 1 INSTALL_RPATH "$ORIGIN/../lib:$ORIGIN/")
 

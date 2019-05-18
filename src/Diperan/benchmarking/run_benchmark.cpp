@@ -2,7 +2,7 @@
 // Created by sotiris on 23/8/2018.
 //
 
-#include "run_benchmark.h"
+#include "benchmarking/run_benchmark.h"
 
 namespace Diperan {
     void run_benchmark(std::string benchmark) {

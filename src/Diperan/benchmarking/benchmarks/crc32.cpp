@@ -2,7 +2,7 @@
 // Created by sotiris on 2/9/2018.
 //
 
-#include "crc32.h"
+#include "benchmarking/benchmarks/crc32.h"
 
 namespace Diperan {
     namespace Benchmarks {

@@ -2,7 +2,7 @@
 // Created by sotiris on 2/9/2018.
 //
 
-#include "sha2.h"
+#include "benchmarking/benchmarks/sha2.h"
 
 namespace Diperan {
     namespace Benchmarks {

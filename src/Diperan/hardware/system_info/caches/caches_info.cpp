@@ -2,7 +2,7 @@
 // Created by sotiris on 7/8/2018.
 //
 
-#include "caches_info.h"
+#include "hardware/system_info/caches/caches_info.h"
 
 namespace Diperan {
 

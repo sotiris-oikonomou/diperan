@@ -2,7 +2,7 @@
 // Created by sotiris on 3/9/2018.
 //
 
-#include "command_pkt_creation.h"
+#include "master/helpers/command_pkt_creation.h"
 
 namespace Diperan {
     void create_peer_config_command(std::vector <int32_t> papi_events = {},

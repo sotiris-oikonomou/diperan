@@ -2,7 +2,7 @@
 // Created by sotiris on 16/8/2018.
 //
 
-#include "packet_creation.h"
+#include "processing/outgoing/packet_creation.h"
 
 namespace Diperan {
     void create_shout_packet(std::string command) {

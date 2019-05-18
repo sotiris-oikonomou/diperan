@@ -2,7 +2,7 @@
 // Created by sotiris on 16/8/2018.
 //
 
-#include "peer_discovery_helpers.h"
+#include "processing/outgoing/master/peer_discovery_helpers.h"
 
 namespace Diperan {
     void add_node_as_peer(std::string node_UUID) {

@@ -2,7 +2,7 @@
 // Created by sotiris on 13/8/2018.
 //
 
-#include "in_processor_helpers_n.h"
+#include "processing/incoming/node/in_processor_helpers_n.h"
 
 namespace Diperan {
     void prepare_sys_info_packet() {

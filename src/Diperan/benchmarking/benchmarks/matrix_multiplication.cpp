@@ -2,7 +2,7 @@
 // Created by sotiris on 26/8/2018.
 //
 
-#include "matrix_multiplication.h"
+#include "benchmarking/benchmarks/matrix_multiplication.h"
 
 namespace Diperan {
     namespace Benchmarks {

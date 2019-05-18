@@ -2,7 +2,7 @@
 // Created by sotiris on 9/8/2018.
 //
 
-#include "in_processor.h"
+#include "processing/incoming/in_processor.h"
 
 namespace Diperan {
 

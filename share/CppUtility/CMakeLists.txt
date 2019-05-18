@@ -1,7 +1,5 @@
 ########################################################################################################################################################
 ###
-### Copyright (C) 2019 by Company Inc.
-###
 ### This file is part of the Diperan project.
 ###
 ########################################################################################################################################################
@@ -15,14 +13,11 @@
 ## Project Properties
 
 SET (PROJECT_NAME "Diperan")
-SET (PROJECT_DESCRIPTION "A pretty cool C++ project.")
+SET (PROJECT_DESCRIPTION "A distributed system information and benchmarking statistics daemon.")
 SET (PROJECT_PATH "Diperan")
-SET (PROJECT_PACKAGE_NAME "Diperan")
-SET (PROJECT_LICENSE "MIT License")
-SET (PROJECT_VENDOR_ID "com.company")
-SET (PROJECT_VENDOR_NAME "Company Inc.")
+SET (PROJECT_PACKAGE_NAME "diperan")
+SET (PROJECT_LICENSE "LGPL")
 SET (PROJECT_VENDOR_CONTACT "sotoik@gmail.com")
-SET (PROJECT_VENDOR_URL "www.company.com")
 
 ########################################################################################################################################################
 
@@ -49,8 +44,12 @@ PROJECT (${PROJECT_NAME} VERSION ${PROJECT_VERSION_STRING} LANGUAGES "C" "CXX")
 ########################################################################################################################################################
 
 ## Targets
+if (WIN32)
+    SET (EXECUTABLE_NAME "${PROJECT_PACKAGE_NAME}.exe")
+else ()
+    SET (EXECUTABLE_NAME "${PROJECT_PACKAGE_NAME}")
+endif ()
 
-SET (EXECUTABLE_NAME "${PROJECT_PACKAGE_NAME}.exe")
 SET (EXECUTABLE_TARGET ${EXECUTABLE_NAME})
 
 FILE (GLOB_RECURSE EXE_HEADERS "${PROJECT_SOURCE_DIR}/include/*.hpp")
