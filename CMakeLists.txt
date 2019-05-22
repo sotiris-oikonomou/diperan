@@ -1,575 +1,327 @@
-########################################################################################################################################################
-###
-### Copyright (C) 2019 by Company Inc.
-###
-### This file is part of the Diperan project.
-###
-########################################################################################################################################################
-
-### @file                       Diperan/CMakeLists.txt
-### @author                     Sotiris Oikonomou <sotoik@gmail.com>
-### @date                       15 May 2019
-
-########################################################################################################################################################
-
-## Project Properties
-
-SET (PROJECT_NAME "Diperan")
-SET (PROJECT_DESCRIPTION "A distributed system information and benchmarking statistics daemon.")
-SET (PROJECT_PATH "Diperan")
-SET (PROJECT_PACKAGE_NAME "Diperan")
-SET (PROJECT_LICENSE "LGPL")
-SET (PROJECT_VENDOR_CONTACT "sotoik@gmail.com")
-
-########################################################################################################################################################
-
-## Project Options
-
-OPTION (BUILD_SHARED_LIBRARY "Build shared library." OFF)
-OPTION (BUILD_STATIC_LIBRARY "Build static library." OFF)
-OPTION (BUILD_UTILITY "Build utility." OFF)
-OPTION (BUILD_CLI "Build cli application." ON)
-OPTION (BUILD_UNIT_TESTS "Build tests" ON)
-OPTION (BUILD_CODE_COVERAGE "Build code coverage" ON)
-OPTION (BUILD_DOCUMENTATION "Build documentation" ON)
-OPTION (INSTALL_DATA "Install data" ON)
-
-########################################################################################################################################################
-
-## Setup
-
-### Compatibility Check
-
-CMAKE_MINIMUM_REQUIRED (VERSION "2.8.12" FATAL_ERROR)
-
-### Paths
-
-SET (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/tools/cmake")
-
-### Policies
-
-CMAKE_POLICY (SET "CMP0048" NEW)
-
-########################################################################################################################################################
-
-## Version
-
-INCLUDE ("GetGitRevisionDescription" OPTIONAL)
-
-IF (EXISTS "${PROJECT_SOURCE_DIR}/.git/packed-refs" AND COMMAND "GET_GIT_HEAD_REVISION" AND COMMAND "GIT_DESCRIBE")
-
-    # Versioning using current git branch tag
-
-    GET_GIT_HEAD_REVISION (GIT_REFSPEC GIT_HASH)
-    GIT_DESCRIBE (GIT_TAGS "--tags")
-
-    STRING (REPLACE "." ";" VERSION_LIST ${GIT_TAGS})
-
-    IF (VERSION_LIST)
-
-        LIST (GET VERSION_LIST 0 PROJECT_VERSION_MAJOR)
-        LIST (GET VERSION_LIST 1 PROJECT_VERSION_MINOR)
-        LIST (GET VERSION_LIST 2 PROJECT_VERSION_PATCH_TWEAK)
-
-        STRING (REPLACE "-" ";" PROJECT_VERSION_PATCH_TWEAKS ${PROJECT_VERSION_PATCH_TWEAK})
-
-        LIST (GET PROJECT_VERSION_PATCH_TWEAKS 0 PROJECT_VERSION_PATCH)
-
-        LIST (LENGTH PROJECT_VERSION_PATCH_TWEAKS PROJECT_VERSION_PATCH_TWEAKS_LENGTH)
-
-        IF (PROJECT_VERSION_PATCH_TWEAKS_LENGTH GREATER 1)
-
-            LIST (GET PROJECT_VERSION_PATCH_TWEAKS 1 PROJECT_VERSION_TWEAK)
-
-        ENDIF ()        
-
-        SET (PROJECT_VERSION_STRING "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
-
-        IF (DEFINED "PROJECT_VERSION_TWEAK")
-
-            SET (PROJECT_VERSION_STRING "${PROJECT_VERSION_STRING}.${PROJECT_VERSION_TWEAK}")
-       
-        ENDIF ()
-
-    ENDIF ()
-
-ENDIF ()
-
-IF (NOT DEFINED PROJECT_VERSION_STRING)
-
-    # Versioning using current date / time
-
-    STRING (TIMESTAMP CURRENT_YEAR %Y UTC)
-    STRING (TIMESTAMP CURRENT_MONTH %m UTC)
-    STRING (TIMESTAMP CURRENT_DAY %d UTC)
-    STRING (TIMESTAMP CURRENT_DAY_OF_YEAR %j UTC)
-
-    SET (PROJECT_VERSION_MAJOR ${CURRENT_YEAR})
-    SET (PROJECT_VERSION_MINOR ${CURRENT_MONTH})
-    SET (PROJECT_VERSION_PATCH ${CURRENT_DAY})
-
-    SET (PROJECT_VERSION_STRING "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
-
-ENDIF ()
-
-MESSAGE (STATUS "Version: ${PROJECT_VERSION_STRING}")
-
-########################################################################################################################################################
-
-## Project Configuration
-
-PROJECT (${PROJECT_NAME} VERSION ${PROJECT_VERSION_STRING} LANGUAGES "C" "CXX")
-
-SET (CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "Limited Configs" FORCE)
-
-IF (NOT CMAKE_BUILD_TYPE)
-    SET (CMAKE_BUILD_TYPE Release CACHE STRING "Build type [None|Debug|Release|RelWithDebInfo|MinSizeRel]." FORCE)
-ENDIF ()
-
-########################################################################################################################################################
-
-## Flags
-
-### Warnings
-
-IF (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-
-    IF (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8)
-
-        MESSAGE (FATAL_ERROR "GCC version must be at least 4.8")
-    
-    ENDIF ()
-
-    SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Wshadow -Wno-deprecated -Wl,--no-undefined")
-
-ENDIF ()
-
-### C++ 14 support
-
-SET (CMAKE_CXX_STANDARD 14)
-SET (CMAKE_CXX_STANDARD_REQUIRED ON)
-SET (CMAKE_CXX_EXTENSIONS OFF)
-
-########################################################################################################################################################
-
-## Debugging Options
-
-SET (CMAKE_VERBOSE_MAKEFILE 1) # Use 1 for debugging, 0 for release
-
-########################################################################################################################################################
-
-## Paths
-
-### Search Paths
-
-LIST (APPEND CMAKE_PREFIX_PATH "${PROJECT_SOURCE_DIR}")
-LIST (APPEND CMAKE_PREFIX_PATH "${PROJECT_SOURCE_DIR}/tools")
-LIST (APPEND CMAKE_PREFIX_PATH "${PROJECT_SOURCE_DIR}/thirdparty")
-
-### Output Paths
-
-SET (EXECUTABLE_OUTPUT_PATH "${PROJECT_SOURCE_DIR}/bin")
-SET (LIBRARY_OUTPUT_PATH "${PROJECT_SOURCE_DIR}/lib")
-SET (DOCS_OUTPUT_PATH "${PROJECT_SOURCE_DIR}/docs")
-
-IF (WIN32)
-
-    SET (INSTALL_ROOT ".")                              # C:\Programme\<project>
-    SET (INSTALL_DATA "bin")                            # C:\Programme\<project>
-    SET (INSTALL_BIN "bin")                             # C:\Programme\<project>
-    SET (INSTALL_LIB "lib")                             # C:\Programme\<project>\lib
-    SET (INSTALL_INCLUDE "include")                     # C:\Programme\<project>\include
-    SET (INSTALL_DOC "doc")                             # C:\Programme\<project>\doc
-    SET (INSTALL_SHORTCUTS ".")                         # Not available under Windows
-    SET (INSTALL_ICONS ".")                             # Not available under Windows
-    SET (INSTALL_INIT ".")                              # Not available under Windows
-
-ELSE ()
-
-    SET (INSTALL_ROOT "share/${PROJECT_PATH}")          # /usr/[local]/share/<project>
-    SET (INSTALL_DATA "share/${PROJECT_PATH}")          # /usr/[local]/share/<project>
-    SET (INSTALL_BIN "bin")                             # /usr/[local]/bin
-    SET (INSTALL_LIB "lib")                             # /usr/[local]/lib
-    SET (INSTALL_TEST "test/${PROJECT_PATH}")           # /usr/[local]/test/<project>
-    SET (INSTALL_INCLUDE "include/${PROJECT_PATH}")     # /usr/[local]/include/<project>
-    SET (INSTALL_DOC "share/doc/${PROJECT_PATH}")       # /usr/[local]/share/doc/<project>
-    SET (INSTALL_SHORTCUTS "share/applications")        # /usr/[local]/share/applications
-    SET (INSTALL_INIT "/etc/init")                      # /etc/init (upstart init scripts)
-
-ENDIF ()
-
-########################################################################################################################################################
-
-## Configure Files
-
-FILE (GLOB_RECURSE CONFIGINPUTS1 "include/*.in.hpp.cmake")
-FILE (GLOB_RECURSE CONFIGINPUTS2 "include/*.hpp.in.cmake")
-FILE (GLOB_RECURSE CONFIGINPUTS3 "src/*.in.hpp.cmake")
-FILE (GLOB_RECURSE CONFIGINPUTS4 "src/*.hpp.in.cmake")
-FILE (GLOB_RECURSE CONFIGINPUTS5 "test/*.in.hpp.cmake")
-FILE (GLOB_RECURSE CONFIGINPUTS6 "test/*.hpp.in.cmake")
-
-LIST (APPEND CONFIGINPUTS "${CONFIGINPUTS1}")
-LIST (APPEND CONFIGINPUTS "${CONFIGINPUTS2}")
-LIST (APPEND CONFIGINPUTS "${CONFIGINPUTS3}")
-LIST (APPEND CONFIGINPUTS "${CONFIGINPUTS4}")
-LIST (APPEND CONFIGINPUTS "${CONFIGINPUTS5}")
-LIST (APPEND CONFIGINPUTS "${CONFIGINPUTS6}")
-
-FOREACH (CONFIGINPUT ${CONFIGINPUTS})
-
-    STRING (REPLACE ".in.hpp.cmake" ".h" CONFIGOUTPUT1 "${CONFIGINPUT}")
-    STRING (REPLACE ".hpp.in.cmake" ".h" CONFIGOUTPUT2 "${CONFIGOUTPUT1}")
-    
-    CONFIGURE_FILE ("${CONFIGINPUT}" "${CONFIGOUTPUT2}")
-
-ENDFOREACH ()
-
-########################################################################################################################################################
-
-## Dependencies
-
-FIND_PACKAGE (PAPI)
-
-########################################################################################################################################################
-
-## Versioning
-
-IF (DEFINED PROJECT_VERSION_STRING AND EXISTS "${PROJECT_SOURCE_DIR}/src/${PROJECT_PATH}/Utilities/Version.cpp.in")
-
-    CONFIGURE_FILE ("${PROJECT_SOURCE_DIR}/src/${PROJECT_PATH}/Utilities/Version.cpp.in" "${CMAKE_CURRENT_BINARY_DIR}/src/${PROJECT_PATH}/Utilities/Version.cpp" @ONLY)
-
-ENDIF ()
-
-########################################################################################################################################################
-
-## Targets
-
-### Shared Library
-
-IF (BUILD_SHARED_LIBRARY)
-
-    SET (SHARED_LIBRARY_NAME "${PROJECT_PACKAGE_NAME}")
-    SET (SHARED_LIBRARY_TARGET "lib${SHARED_LIBRARY_NAME}.so")
-
-    FILE (GLOB_RECURSE SHARED_LIBRARY_HEADERS "${PROJECT_SOURCE_DIR}/include/${PROJECT_PATH}/*.hpp")
-    FILE (GLOB_RECURSE SHARED_LIBRARY_SRCS "${PROJECT_SOURCE_DIR}/src/${PROJECT_PATH}/*.cpp")
-
-    ADD_LIBRARY (${SHARED_LIBRARY_TARGET} SHARED ${SHARED_LIBRARY_SRCS})
-
-    TARGET_INCLUDE_DIRECTORIES (${SHARED_LIBRARY_TARGET} PUBLIC "${PROJECT_SOURCE_DIR}/include/")
-
-    TARGET_LINK_LIBRARIES (${SHARED_LIBRARY_TARGET} "pthread")
-
-    SET_TARGET_PROPERTIES (${SHARED_LIBRARY_TARGET} PROPERTIES VERSION ${PROJECT_VERSION_STRING} SOVERSION ${PROJECT_VERSION_MAJOR} OUTPUT_NAME ${SHARED_LIBRARY_NAME} CLEAN_DIRECT_OUTPUT 1 INSTALL_RPATH "$ORIGIN/../lib:$ORIGIN/")
-
-    INSTALL (DIRECTORY "${PROJECT_SOURCE_DIR}/include/${PROJECT_PATH}/" DESTINATION ${INSTALL_INCLUDE} COMPONENT "headers" FILES_MATCHING PATTERN "*.hpp")
-    INSTALL (DIRECTORY "${PROJECT_SOURCE_DIR}/src/${PROJECT_PATH}/" DESTINATION ${INSTALL_INCLUDE} COMPONENT "headers" FILES_MATCHING PATTERN "*.tpp")
-    INSTALL (TARGETS ${SHARED_LIBRARY_TARGET} DESTINATION ${INSTALL_LIB} COMPONENT "libraries")
-
-ENDIF ()
-
-### Static Library
-
-IF (BUILD_STATIC_LIBRARY)
-
-    SET (STATIC_LIBRARY_NAME "${PROJECT_PACKAGE_NAME}")
-    SET (STATIC_LIBRARY_TARGET "lib${STATIC_LIBRARY_NAME}.a")
-
-    FILE (GLOB_RECURSE STATIC_LIBRARY_HEADERS "${PROJECT_SOURCE_DIR}/include/${PROJECT_PATH}/*.hpp")
-    FILE (GLOB_RECURSE STATIC_LIBRARY_SRCS "${PROJECT_SOURCE_DIR}/src/${PROJECT_PATH}/*.cpp")
-
-    ADD_LIBRARY (${STATIC_LIBRARY_TARGET} STATIC ${STATIC_LIBRARY_SRCS})
-
-    TARGET_INCLUDE_DIRECTORIES (${STATIC_LIBRARY_TARGET} PUBLIC "${PROJECT_SOURCE_DIR}/include/")
-
-    TARGET_LINK_LIBRARIES (${STATIC_LIBRARY_TARGET} "pthread")
-
-    SET_TARGET_PROPERTIES (${STATIC_LIBRARY_TARGET} PROPERTIES VERSION ${PROJECT_VERSION_STRING} OUTPUT_NAME ${SHARED_LIBRARY_NAME} CLEAN_DIRECT_OUTPUT 1 INSTALL_RPATH "$ORIGIN/../lib:$ORIGIN/")
-
-    INSTALL (DIRECTORY "${PROJECT_SOURCE_DIR}/include/${PROJECT_PATH}/" DESTINATION ${INSTALL_INCLUDE} COMPONENT "headers" FILES_MATCHING PATTERN "*.hpp")
-    INSTALL (DIRECTORY "${PROJECT_SOURCE_DIR}/src/${PROJECT_PATH}/" DESTINATION ${INSTALL_INCLUDE} COMPONENT "headers" FILES_MATCHING PATTERN "*.tpp")
-    INSTALL (TARGETS ${SHARED_LIBRARY_TARGET} DESTINATION ${INSTALL_LIB} COMPONENT "libraries")
-
-ENDIF ()
-
-### Utility 
-
-IF (BUILD_UTILITY)
-
-    ADD_SUBDIRECTORY ("${PROJECT_SOURCE_DIR}/share/CppUtility")
-
-ENDIF ()
-
-### Cli application 
-
-IF (BUILD_CLI)
-
-    ## Targets
-    if (WIN32)
-        SET (EXECUTABLE_NAME "${PROJECT_PACKAGE_NAME}.exe")
-    else ()
-        SET (EXECUTABLE_NAME "${PROJECT_PACKAGE_NAME}")
-    endif ()
-
-    SET (EXECUTABLE_TARGET ${EXECUTABLE_NAME})
-
-    FILE (GLOB_RECURSE EXE_HEADERS "${PROJECT_SOURCE_DIR}/include/*.hpp")
-    FILE (GLOB_RECURSE EXE_SRCS "${PROJECT_SOURCE_DIR}/src/*.cpp" "${PROJECT_SOURCE_DIR}/src/*.cxx")
-
-    ADD_EXECUTABLE (${EXECUTABLE_TARGET} ${EXE_SRCS})
-
-    TARGET_INCLUDE_DIRECTORIES (${EXECUTABLE_TARGET} PUBLIC "${CMAKE_SOURCE_DIR}/include")
-    TARGET_INCLUDE_DIRECTORIES (${EXECUTABLE_TARGET} PUBLIC "${PROJECT_SOURCE_DIR}/include")
-
-    TARGET_LINK_LIBRARIES (${EXECUTABLE_TARGET} "pthread")
-    TARGET_LINK_LIBRARIES (${EXECUTABLE_TARGET} "zyre")
-    TARGET_LINK_LIBRARIES (${EXECUTABLE_TARGET} "czmq")
-    TARGET_LINK_LIBRARIES (${EXECUTABLE_TARGET} "zmq")
-
-    IF (PAPI_FOUND)
-        TARGET_INCLUDE_DIRECTORIES (${EXECUTABLE_TARGET} PRIVATE ${PAPI_INCLUDE_DIRS})
-        TARGET_LINK_LIBRARIES (${EXECUTABLE_TARGET} ${PAPI_LIBRARIES})
-    ELSE ()
-        MESSAGE (SEND_ERROR "[PAPI] not found.")
-    ENDIF ()
-    
-    SET_TARGET_PROPERTIES (${EXECUTABLE_TARGET} PROPERTIES VERSION ${PROJECT_VERSION_STRING} OUTPUT_NAME ${EXECUTABLE_NAME} CLEAN_DIRECT_OUTPUT 1)
-
-    INSTALL (TARGETS ${EXECUTABLE_TARGET} DESTINATION ${INSTALL_BIN} COMPONENT "applications")
-
-ENDIF ()
-
-### Unit Tests
-
-IF (BUILD_UNIT_TESTS)
-
-    SET (UNIT_TESTS_TARGET "${PROJECT_PACKAGE_NAME}.test")
-
-    FILE (GLOB_RECURSE TEST_SRCS "${PROJECT_SOURCE_DIR}/test/${PROJECT_PATH}/*.test.cpp")
-
-    ADD_EXECUTABLE (${UNIT_TESTS_TARGET} ${TEST_SRCS})
-
-    FIND_PACKAGE ("GTest")
-
-    IF (NOT GTEST_FOUND)
-            
-        ADD_SUBDIRECTORY ("${PROJECT_SOURCE_DIR}/thirdparty/gtest")
-
-        ADD_DEPENDENCIES (${UNIT_TESTS_TARGET} "googletest")
-
-        LIST (APPEND GTEST_BOTH_LIBRARIES "${GTEST_LIBS_DIR}/libgtest.a")
-        LIST (APPEND GTEST_BOTH_LIBRARIES "${GTEST_LIBS_DIR}/libgtest_main.a")
-        
-    ENDIF ()
-
-    ENABLE_TESTING ()
-
-    TARGET_INCLUDE_DIRECTORIES (${UNIT_TESTS_TARGET} PUBLIC ${GTEST_INCLUDE_DIRS})
-    TARGET_INCLUDE_DIRECTORIES (${UNIT_TESTS_TARGET} PUBLIC "${PROJECT_SOURCE_DIR}/include")
-    TARGET_INCLUDE_DIRECTORIES (${UNIT_TESTS_TARGET} PUBLIC "${PROJECT_SOURCE_DIR}/test")
-
-    TARGET_LINK_LIBRARIES (${UNIT_TESTS_TARGET} "pthread")
-    TARGET_LINK_LIBRARIES (${UNIT_TESTS_TARGET} ${GTEST_BOTH_LIBRARIES})
-
-    SET_TARGET_PROPERTIES (${UNIT_TESTS_TARGET} PROPERTIES VERSION ${PROJECT_VERSION_STRING} OUTPUT_NAME ${UNIT_TESTS_TARGET} CLEAN_DIRECT_OUTPUT 1 INSTALL_RPATH "$ORIGIN/../lib:$ORIGIN/")
-
-    ADD_TEST (NAME "all" COMMAND ${UNIT_TESTS_TARGET} "${CMAKE_CURRENT_LIST_DIR}/test")
-
-    INSTALL (TARGETS ${UNIT_TESTS_TARGET} DESTINATION ${INSTALL_TEST} COMPONENT "tests")
-    
-    ADD_CUSTOM_TARGET ("check" "${PROJECT_SOURCE_DIR}/bin/${UNIT_TESTS_TARGET}" "${CMAKE_CURRENT_LIST_DIR}/test" DEPENDS ${UNIT_TESTS_TARGET} COMMENT "Executing unit tests..." VERBATIM SOURCES ${TEST_SRCS})
-
-    #### Code Coverage
-
-    IF (BUILD_CODE_COVERAGE)
-
-        SET (COVERAGE_TARGET "coverage")
-
-        INCLUDE (CodeCoverage)
-
-        APPEND_COVERAGE_COMPILER_FLAGS ()
-
-        SET (COVERAGE_EXCLUDES  "${CMAKE_CURRENT_BINARY_DIR}/thirdparty/gtest/src/googletest/googletest/include/gtest/*"
-                                "${CMAKE_CURRENT_BINARY_DIR}/thirdparty/gtest/src/googletest/googletest/include/gtest/internal/*")
-
-        SETUP_TARGET_FOR_COVERAGE (
-            NAME ${COVERAGE_TARGET}
-            EXECUTABLE ${UNIT_TESTS_TARGET}
-            DEPENDENCIES "coverage"
-        )
-
-    ENDIF ()
-
-ENDIF ()
-
-### Documentation
-
-IF (BUILD_DOCUMENTATION)
-
-    SET (DOCUMENTATION_TARGET "docs")
-
-    SET (DOXYFILE_IN "${PROJECT_SOURCE_DIR}/tools/doxygen/Doxyfile.in")
-    SET (DOXYFILE "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile")
-
-    CONFIGURE_FILE (${DOXYFILE_IN} ${DOXYFILE} @ONLY)
-
-    CONFIGURE_FILE ("${PROJECT_SOURCE_DIR}/tools/doxygen/doxygen-bootstrapped/example-site/header.html" "${CMAKE_CURRENT_BINARY_DIR}/header.html" COPYONLY)
-    CONFIGURE_FILE ("${PROJECT_SOURCE_DIR}/tools/doxygen/doxygen-bootstrapped/example-site/footer.html" "${CMAKE_CURRENT_BINARY_DIR}/footer.html" COPYONLY)
-    CONFIGURE_FILE ("${PROJECT_SOURCE_DIR}/tools/doxygen/doxygen-bootstrapped/customdoxygen.css" "${CMAKE_CURRENT_BINARY_DIR}/customdoxygen.css" COPYONLY)
-    CONFIGURE_FILE ("${PROJECT_SOURCE_DIR}/tools/doxygen/doxygen-bootstrapped/doxy-boot.js" "${CMAKE_CURRENT_BINARY_DIR}/doxy-boot.js" COPYONLY)
-    CONFIGURE_FILE ("${PROJECT_SOURCE_DIR}/tools/doxygen/doxygen-bootstrapped/jquery.smartmenus.js" "${CMAKE_CURRENT_BINARY_DIR}/jquery.smartmenus.js" COPYONLY)
-    CONFIGURE_FILE ("${PROJECT_SOURCE_DIR}/tools/doxygen/doxygen-bootstrapped/addons/bootstrap/jquery.smartmenus.bootstrap.js" "${CMAKE_CURRENT_BINARY_DIR}/jquery.smartmenus.bootstrap.js" COPYONLY)
-    CONFIGURE_FILE ("${PROJECT_SOURCE_DIR}/tools/doxygen/doxygen-bootstrapped/addons/bootstrap/jquery.smartmenus.bootstrap.css" "${CMAKE_CURRENT_BINARY_DIR}/jquery.smartmenus.bootstrap.css" COPYONLY)
-
-    FIND_PACKAGE ("Doxygen")
-    
-    IF (NOT DOXYGEN_FOUND)
-            
-        ADD_SUBDIRECTORY ("${PROJECT_SOURCE_DIR}/thirdparty/doxygen")
-
-        SET (DOXYGEN_EXECUTABLE "${CMAKE_CURRENT_BINARY_DIR}/thirdparty/doxygen/source/bin/doxygen")
-
-        ADD_CUSTOM_TARGET (${DOCUMENTATION_TARGET} ALL
-            COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYFILE}
-            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-            DEPENDS "doxygen"
-            COMMENT "Generating API documentation with Doxygen"
-            VERBATIM)
-
-    ELSE ()
-
-        ADD_CUSTOM_TARGET (${DOCUMENTATION_TARGET} ALL
-            COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYFILE}
-            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-            COMMENT "Generating API documentation with Doxygen"
-            VERBATIM)
-        
-    ENDIF ()
-
-    INSTALL (DIRECTORY "${DOCS_OUTPUT_PATH}/html/" DESTINATION ${INSTALL_DOC} COMPONENT "documentation")
-
-ENDIF ()
-
-### Configuration
-
-CONFIGURE_FILE (
-    "${CMAKE_MODULE_PATH}/${PROJECT_PATH}Config.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_PATH}Config.cmake"
-    @ONLY)
-
-CONFIGURE_FILE (
-    "${CMAKE_MODULE_PATH}/${PROJECT_PATH}ConfigVersion.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_PATH}ConfigVersion.cmake"
-    @ONLY)
-
-INSTALL (FILES "${PROJECT_BINARY_DIR}/${PROJECT_PATH}Config.cmake" DESTINATION "${INSTALL_LIB}/${PROJECT_PATH}" COMPONENT "libraries")
-INSTALL (FILES "${PROJECT_BINARY_DIR}/${PROJECT_PATH}ConfigVersion.cmake" DESTINATION "${INSTALL_LIB}/${PROJECT_PATH}" COMPONENT "libraries")
-
-### Uninstall
-
-CONFIGURE_FILE (
-    "${CMAKE_MODULE_PATH}/UninstallTarget.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/UninstallTarget.cmake"
-    IMMEDIATE @ONLY)
-
-ADD_CUSTOM_TARGET ("uninstall" COMMAND ${CMAKE_COMMAND} -P "${CMAKE_CURRENT_BINARY_DIR}/UninstallTarget.cmake")
-
-### Misc
-
-INSTALL (FILES "LICENSE" DESTINATION ${INSTALL_ROOT} COMPONENT "documentation")
-
-IF (INSTALL_DATA)
-
-    IF (EXISTS "${PROJECT_SOURCE_DIR}/share/data")
-
-        INSTALL (DIRECTORY "${PROJECT_SOURCE_DIR}/share/data" DESTINATION ${INSTALL_DATA} COMPONENT "data")
-
-    ENDIF ()
-
-ENDIF ()
-
-########################################################################################################################################################
-
-## Packaging
-
-SET (CPACK_PACKAGE_NAME ${PROJECT_PACKAGE_NAME})
-SET (CPACK_PACKAGE_DESCRIPTION_SUMMARY ${PROJECT_DESCRIPTION})
-SET (CPACK_PACKAGE_DESCRIPTION_FILE "${PROJECT_SOURCE_DIR}/LICENSE")
-SET (CPACK_PACKAGE_SUMMARY ${PROJECT_NAME})
-SET (CPACK_PACKAGE_VENDOR ${PROJECT_VENDOR_NAME})
-SET (CPACK_PACKAGE_CONTACT ${PROJECT_VENDOR_CONTACT})
-SET (CPACK_PACKAGE_LICENSE ${PROJECT_LICENSE})
-SET (CPACK_PACKAGE_VERSION ${PROJECT_VERSION_STRING})
-SET (CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
-SET (CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
-SET (CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
-SET (CPACK_PACKAGE_RELEASE 1)
-SET (CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_PACKAGE_RELEASE}.${CMAKE_SYSTEM_PROCESSOR}")
-
-SET (CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/LICENSE")
-SET (CPACK_RESOURCE_FILE_README "${PROJECT_SOURCE_DIR}/README.md")
-
-SET (CPACK_COMPONENTS_ALL "applications" "headers" "libraries" "documentation" "tests" "data")
-
-SET (CPACK_COMPONENT_APPLICATIONS_DISPLAY_NAME "Applications")
-SET (CPACK_COMPONENT_HEADERS_DISPLAY_NAME "Headers")
-SET (CPACK_COMPONENT_LIBRARIES_DISPLAY_NAME "Libraries")
-SET (CPACK_COMPONENT_DOCUMENTATION_DISPLAY_NAME "Documentation")
-SET (CPACK_COMPONENT_TESTS_DISPLAY_NAME "Unit Tests")
-SET (CPACK_COMPONENT_DATA_DISPLAY_NAME "Shared Data")
-SET (CPACK_COMPONENT_PYTHON_DISPLAY_NAME "Python Bindings")
-
-SET (CPACK_COMPONENT_APPLICATIONS_DESCRIPTION "Applications")
-SET (CPACK_COMPONENT_HEADERS_DESCRIPTION "Headers")
-SET (CPACK_COMPONENT_LIBRARIES_DESCRIPTION "Libraries")
-SET (CPACK_COMPONENT_DOCUMENTATION_DESCRIPTION "Documentation")
-SET (CPACK_COMPONENT_TESTS_DESCRIPTION "Unit Tests")
-SET (CPACK_COMPONENT_DATA_DESCRIPTION "Shared Data")
-SET (CPACK_COMPONENT_PYTHON_DESCRIPTION "Python Bindings")
-
-SET (CPACK_COMPONENT_APPLICATIONS_DEPENDS "libraries")
-SET (CPACK_COMPONENT_HEADERS_DEPENDS "libraries")
-SET (CPACK_COMPONENT_LIBRARIES_DEPENDS "data")
-SET (CPACK_COMPONENT_PYTHON_DEPENDS "libraries")
-
-SET (CPACK_COMPONENT_APPLICATIONS_GROUP "runtime")
-SET (CPACK_COMPONENT_HEADERS_GROUP "devel")
-SET (CPACK_COMPONENT_LIBRARIES_GROUP "runtime")
-SET (CPACK_COMPONENT_DOCUMENTATION_GROUP "devel")
-SET (CPACK_COMPONENT_TESTS_GROUP "devel")
-SET (CPACK_COMPONENT_DATA_GROUP "runtime")
-SET (CPACK_COMPONENT_PYTHON_GROUP "python")
-
-SET (CPACK_COMPONENT_GROUP_RUNTIME_DESCRIPTION "Runtime")
-SET (CPACK_COMPONENT_GROUP_DEVEL_DESCRIPTION "Development tools")
-SET (CPACK_COMPONENT_GROUP_PYTHON_DESCRIPTION "Python bindings")
-
-SET (CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
-
-SET (CPACK_GENERATOR "RPM")
-
-SET (CPACK_RPM_COMPONENT_INSTALL "ON")
-SET (CPACK_RPM_PACKAGE_LICENSE ${CPACK_PACKAGE_LICENSE})
-SET (CPACK_RPM_PACKAGE_VENDOR ${CPACK_PACKAGE_VENDOR})
-SET (CPACK_RPM_PACKAGE_DESCRIPTION ${CPACK_PACKAGE_DESCRIPTION_SUMMARY})
-
-# SET (CPACK_RPM_PACKAGE_REQUIRES "eigen3")
-
-SET (CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST
-    /usr
-    /usr/bin
-    /usr/include
-    /usr/lib
-    /usr/share
-    /usr/local
-    /usr/local/bin
-    /usr/local/include
-    /usr/local/lib
-    /usr/local/share
-    /usr/share/man
+#
+# CI Hello World
+#
+# Copyright (C) 2017 Assured Information Security, Inc.
+# Author: Rian Quinn        <quinnr@ainfosec.com>
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+cmake_minimum_required(VERSION 3.6)
+project(ci_helloworld C CXX)
+
+include(ExternalProject)
+find_package(Git REQUIRED)
+
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# ------------------------------------------------------------------------------
+# Includes
+# ------------------------------------------------------------------------------
+
+include_directories(include)
+include_directories(SYSTEM ${CMAKE_BINARY_DIR}/include)
+
+# ------------------------------------------------------------------------------
+# Catch
+# ------------------------------------------------------------------------------
+
+list(APPEND CATCH_CMAKE_ARGS
+    "-DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}"
 )
 
-INCLUDE (CPack)
+ExternalProject_Add(
+    catch
+    GIT_REPOSITORY      https://github.com/Bareflank/catch.git
+    GIT_TAG             v1.2
+    GIT_SHALLOW         1
+    CMAKE_ARGS          ${CATCH_CMAKE_ARGS}
+    PREFIX              ${CMAKE_BINARY_DIR}/external/catch/prefix
+    TMP_DIR             ${CMAKE_BINARY_DIR}/external/catch/tmp
+    STAMP_DIR           ${CMAKE_BINARY_DIR}/external/catch/stamp
+    DOWNLOAD_DIR        ${CMAKE_BINARY_DIR}/external/catch/download
+    SOURCE_DIR          ${CMAKE_BINARY_DIR}/external/catch/src
+    BINARY_DIR          ${CMAKE_BINARY_DIR}/external/catch/build
+)
 
-########################################################################################################################################################
+# ------------------------------------------------------------------------------
+# Hippomocks
+# ------------------------------------------------------------------------------
+
+list(APPEND HIPPOMOCKS_CMAKE_ARGS
+    "-DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}"
+)
+
+ExternalProject_Add(
+    hippomocks
+    GIT_REPOSITORY      https://github.com/Bareflank/hippomocks.git
+    GIT_TAG             v1.2
+    GIT_SHALLOW         1
+    CMAKE_ARGS          ${HIPPOMOCKS_CMAKE_ARGS}
+    PREFIX              ${CMAKE_BINARY_DIR}/external/hippomocks/prefix
+    TMP_DIR             ${CMAKE_BINARY_DIR}/external/hippomocks/tmp
+    STAMP_DIR           ${CMAKE_BINARY_DIR}/external/hippomocks/stamp
+    DOWNLOAD_DIR        ${CMAKE_BINARY_DIR}/external/hippomocks/download
+    SOURCE_DIR          ${CMAKE_BINARY_DIR}/external/hippomocks/src
+    BINARY_DIR          ${CMAKE_BINARY_DIR}/external/hippomocks/build
+)
+
+# ------------------------------------------------------------------------------
+# GSL
+# ------------------------------------------------------------------------------
+
+list(APPEND GSL_CMAKE_ARGS
+    "-DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}"
+)
+
+ExternalProject_Add(
+    gsl
+    GIT_REPOSITORY      https://github.com/Bareflank/GSL.git
+    GIT_TAG             v1.2
+    GIT_SHALLOW         1
+    CMAKE_ARGS          ${GSL_CMAKE_ARGS}
+    PREFIX              ${CMAKE_BINARY_DIR}/external/gsl/prefix
+    TMP_DIR             ${CMAKE_BINARY_DIR}/external/gsl/tmp
+    STAMP_DIR           ${CMAKE_BINARY_DIR}/external/gsl/stamp
+    DOWNLOAD_DIR        ${CMAKE_BINARY_DIR}/external/gsl/download
+    SOURCE_DIR          ${CMAKE_BINARY_DIR}/external/gsl/src
+    BINARY_DIR          ${CMAKE_BINARY_DIR}/external/gsl/build
+)
+
+# ------------------------------------------------------------------------------
+# Astyle
+# ------------------------------------------------------------------------------
+
+if(ENABLE_ASTYLE)
+
+    list(APPEND ASTYLE_CMAKE_ARGS
+        "-DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}"
+    )
+
+    ExternalProject_Add(
+        astyle
+        GIT_REPOSITORY      https://github.com/Bareflank/astyle.git
+        GIT_TAG             v1.2
+        GIT_SHALLOW         1
+        CMAKE_ARGS          ${ASTYLE_CMAKE_ARGS}
+        PREFIX              ${CMAKE_BINARY_DIR}/external/astyle/prefix
+        TMP_DIR             ${CMAKE_BINARY_DIR}/external/astyle/tmp
+        STAMP_DIR           ${CMAKE_BINARY_DIR}/external/astyle/stamp
+        DOWNLOAD_DIR        ${CMAKE_BINARY_DIR}/external/astyle/download
+        SOURCE_DIR          ${CMAKE_BINARY_DIR}/external/astyle/src
+        BINARY_DIR          ${CMAKE_BINARY_DIR}/external/astyle/build
+    )
+
+    list(APPEND ASTYLE_ARGS
+        --style=1tbs
+        --lineend=linux
+        --suffix=none
+        --pad-oper
+        --unpad-paren
+        --break-closing-brackets
+        --align-pointer=name
+        --align-reference=name
+        --indent-preproc-define
+        --indent-switches
+        --indent-col1-comments
+        --keep-one-line-statements
+        --keep-one-line-blocks
+        --pad-header
+        --convert-tabs
+        --min-conditional-indent=0
+        --indent=spaces=4
+        --close-templates
+        --add-brackets
+        --break-after-logical
+        ${CMAKE_SOURCE_DIR}/include/*.h
+        ${CMAKE_SOURCE_DIR}/src/*.cpp
+        ${CMAKE_SOURCE_DIR}/test/*.cpp
+    )
+
+    if(NOT WIN32 STREQUAL "1")
+        add_custom_target(
+            format
+            COMMAND ${CMAKE_BINARY_DIR}/bin/astyle ${ASTYLE_ARGS}
+            COMMENT "running astyle"
+        )
+    else()
+        add_custom_target(
+            format
+            COMMAND ${CMAKE_BINARY_DIR}/bin/astyle.exe ${ASTYLE_ARGS}
+            COMMENT "running astyle"
+        )
+    endif()
+
+endif()
+
+# ------------------------------------------------------------------------------
+# Clang Tidy
+# ------------------------------------------------------------------------------
+
+if(ENABLE_CLANG_TIDY)
+
+    find_program(CLANG_TIDY_BIN clang-tidy-4.0)
+    find_program(RUN_CLANG_TIDY_BIN run-clang-tidy-4.0.py)
+
+    if(CLANG_TIDY_BIN STREQUAL "CLANG_TIDY_BIN-NOTFOUND")
+        message(FATAL_ERROR "unable to locate clang-tidy-4.0")
+    endif()
+
+    if(RUN_CLANG_TIDY_BIN STREQUAL "RUN_CLANG_TIDY_BIN-NOTFOUND")
+        message(FATAL_ERROR "unable to locate run-clang-tidy-4.0.py")
+    endif()
+
+    list(APPEND RUN_CLANG_TIDY_BIN_ARGS
+        -clang-tidy-binary ${CLANG_TIDY_BIN}
+        -header-filter=.*
+        -checks=clan*,cert*,misc*,perf*,cppc*,read*,mode*,-cert-err58-cpp,-misc-noexcept-move-constructor
+    )
+
+    add_custom_target(
+        tidy
+        COMMAND ${RUN_CLANG_TIDY_BIN} ${RUN_CLANG_TIDY_BIN_ARGS}
+        COMMENT "running clang tidy"
+    )
+
+endif()
+
+# ------------------------------------------------------------------------------
+# CppCheck
+# ------------------------------------------------------------------------------
+
+if(ENABLE_CPPCHECK)
+
+    list(APPEND CPPCHECK_CMAKE_ARGS
+        "-DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}"
+    )
+
+    ExternalProject_Add(
+        cppcheck
+        GIT_REPOSITORY      https://github.com/danmar/cppcheck.git
+        GIT_TAG             1.79
+        GIT_SHALLOW         1
+        CMAKE_ARGS          ${CPPCHECK_CMAKE_ARGS}
+        PREFIX              ${CMAKE_BINARY_DIR}/external/cppcheck/prefix
+        TMP_DIR             ${CMAKE_BINARY_DIR}/external/cppcheck/tmp
+        STAMP_DIR           ${CMAKE_BINARY_DIR}/external/cppcheck/stamp
+        DOWNLOAD_DIR        ${CMAKE_BINARY_DIR}/external/cppcheck/download
+        SOURCE_DIR          ${CMAKE_BINARY_DIR}/external/cppcheck/src
+        BINARY_DIR          ${CMAKE_BINARY_DIR}/external/cppcheck/build
+    )
+
+    list(APPEND CPPCHECK_ARGS
+        --enable=warning,style,performance,portability,unusedFunction
+        --std=c++11
+        --verbose
+        --error-exitcode=1
+        --language=c++
+        -DMAIN=main
+        -I ${CMAKE_SOURCE_DIR}/include
+        ${CMAKE_SOURCE_DIR}/include/*.h
+        ${CMAKE_SOURCE_DIR}/src/*.cpp
+        ${CMAKE_SOURCE_DIR}/test/*.cpp
+    )
+
+    add_custom_target(
+        check
+        COMMAND ${CMAKE_BINARY_DIR}/bin/cppcheck ${CPPCHECK_ARGS}
+        COMMENT "running cppcheck"
+    )
+
+endif()
+
+# ------------------------------------------------------------------------------
+# Coverage
+# ------------------------------------------------------------------------------
+
+if(ENABLE_COVERAGE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g ")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ftest-coverage")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
+endif()
+
+# ------------------------------------------------------------------------------
+# Google Sanitizers
+# ------------------------------------------------------------------------------
+
+if(ENABLE_ASAN)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O1")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fuse-ld=gold")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=leak")
+endif()
+
+if(ENABLE_USAN)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fuse-ld=gold")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=undefined")
+endif()
+
+if(ENABLE_TSAN)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fuse-ld=gold")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=thread")
+endif()
+
+# ------------------------------------------------------------------------------
+# Valgrind
+# ------------------------------------------------------------------------------
+
+set(MEMORYCHECK_COMMAND_OPTIONS "${MEMORYCHECK_COMMAND_OPTIONS} --leak-check=full")
+set(MEMORYCHECK_COMMAND_OPTIONS "${MEMORYCHECK_COMMAND_OPTIONS} --track-fds=yes")
+set(MEMORYCHECK_COMMAND_OPTIONS "${MEMORYCHECK_COMMAND_OPTIONS} --trace-children=yes")
+set(MEMORYCHECK_COMMAND_OPTIONS "${MEMORYCHECK_COMMAND_OPTIONS} --error-exitcode=1")
+
+# ------------------------------------------------------------------------------
+# Main Executable
+# ------------------------------------------------------------------------------
+
+add_executable(ci_helloworld src/main.cpp)
+add_dependencies(ci_helloworld gsl)
+target_compile_definitions(ci_helloworld PRIVATE VIRTUAL= MAIN=main)
+
+# ------------------------------------------------------------------------------
+# Tests
+# ------------------------------------------------------------------------------
+
+include(CTest)
+
+add_library(test_catch STATIC test/test.cpp)
+add_dependencies(test_catch catch)
+
+add_library(business_logic STATIC src/main.cpp)
+add_dependencies(business_logic gsl)
+target_compile_definitions(business_logic PRIVATE VIRTUAL=virtual MAIN=unittest_main)
+
+macro(do_test str)
+    add_executable(test_${str} test/test_${str}.cpp)
+    add_test(test_${str} test_${str})
+    target_link_libraries(test_${str} test_catch)
+    target_link_libraries(test_${str} business_logic)
+    add_dependencies(test_${str} gsl)
+    add_dependencies(test_${str} catch)
+    add_dependencies(test_${str} hippomocks)
+    target_compile_definitions(test_${str} PRIVATE VIRTUAL=virtual)
+endmacro(do_test)
+
+do_test(main)
+do_test(producer)
+do_test(consumer)

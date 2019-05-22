@@ -7,8 +7,9 @@
 
 #include "mainVariables.h"
 
-namespace Diperan {
-    void init();
+namespace Diperan
+{
+void init();
 }
 
 #endif

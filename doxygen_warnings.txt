@@ -1,0 +1,4 @@
+FIX: /home/sotiris/projects/cpp/ci_helloworld/include/consumer.h:60: warning: return type of member consumer::operator= is not documented
+FIX: /home/sotiris/projects/cpp/ci_helloworld/include/consumer.h:63: warning: return type of member consumer::operator= is not documented
+FIX: /home/sotiris/projects/cpp/ci_helloworld/include/producer.h:68: warning: return type of member producer::operator= is not documented
+FIX: /home/sotiris/projects/cpp/ci_helloworld/include/producer.h:71: warning: return type of member producer::operator= is not documented
