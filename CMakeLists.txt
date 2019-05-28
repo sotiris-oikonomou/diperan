@@ -1,32 +1,12 @@
-#
-# CI Hello World
-#
-# Copyright (C) 2017 Assured Information Security, Inc.
-# Author: Rian Quinn        <quinnr@ainfosec.com>
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
 
 cmake_minimum_required(VERSION 3.6)
-project(ci_helloworld C CXX)
+project(diperan C CXX)
 
 include(ExternalProject)
 find_package(Git REQUIRED)
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/tools/cmake)
+find_package(PAPI REQUIRED)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -293,10 +273,45 @@ set(MEMORYCHECK_COMMAND_OPTIONS "${MEMORYCHECK_COMMAND_OPTIONS} --error-exitcode
 # ------------------------------------------------------------------------------
 # Main Executable
 # ------------------------------------------------------------------------------
+set(SOURCES          # All .cpp files in src/
+    src/init.cpp
+    src/processing/incoming/in_processor.cpp
+    src/processing/incoming/master/in_processor_helpers_m.cpp
+    src/processing/incoming/node/in_processor_helpers_n.cpp
+    src/processing/outgoing/packet_creation.cpp
+    src/processing/outgoing/master/peer_discovery_helpers.cpp
+    src/processing/outgoing/master/peer_discovery.cpp
+    src/network/sender.cpp
+    src/network/listener.cpp
+    src/master/master.cpp
+    src/master/helpers/command_pkt_creation.cpp
+    src/hardware/find_supported_events.cpp
+    src/hardware/system_info/system_info.cpp
+    src/hardware/system_info/caches/caches_info.cpp
+    src/benchmarking/counters.cpp
+    src/benchmarking/run_benchmark.cpp
+    src/benchmarking/algorithms/miniz.c
+    src/benchmarking/benchmarks/crc32.cpp
+    src/benchmarking/benchmarks/matrix_multiplication.cpp
+    src/benchmarking/benchmarks/sha2.cpp
+)
 
-add_executable(ci_helloworld src/main.cpp)
-add_dependencies(ci_helloworld gsl)
-target_compile_definitions(ci_helloworld PRIVATE VIRTUAL= MAIN=main)
+add_executable(diperan src/main.cpp ${SOURCES})
+
+target_link_libraries(diperan "pthread")
+target_link_libraries(diperan "zyre")
+target_link_libraries(diperan "czmq")
+target_link_libraries(diperan "zmq")
+
+if(PAPI_FOUND)
+    target_include_directories(diperan PRIVATE ${PAPI_INCLUDE_DIRS})
+    target_link_libraries(diperan ${PAPI_LIBRARIES})
+else()
+    message(SEND_ERROR "[PAPI] not found.")
+endif()
+
+add_dependencies(diperan gsl)
+target_compile_definitions(diperan PRIVATE VIRTUAL= MAIN=main)
 
 # ------------------------------------------------------------------------------
 # Tests
