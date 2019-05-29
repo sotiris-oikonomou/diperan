@@ -290,7 +290,6 @@ set(SOURCES          # All .cpp files in src/
     src/hardware/system_info/caches/caches_info.cpp
     src/benchmarking/counters.cpp
     src/benchmarking/run_benchmark.cpp
-    src/benchmarking/algorithms/miniz.c
     src/benchmarking/benchmarks/crc32.cpp
     src/benchmarking/benchmarks/matrix_multiplication.cpp
     src/benchmarking/benchmarks/sha2.cpp
@@ -337,6 +336,6 @@ macro(do_test str)
     target_compile_definitions(test_${str} PRIVATE VIRTUAL=virtual)
 endmacro(do_test)
 
-do_test(main)
-do_test(producer)
-do_test(consumer)
+#do_test(main)
+#do_test(producer)
+#do_test(consumer)
